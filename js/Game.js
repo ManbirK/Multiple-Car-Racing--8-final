@@ -7,6 +7,8 @@ class Game {
 
     this.leader1 = createElement("h2");
     this.leader2 = createElement("h2");
+
+  
   }
 
   getState() {
@@ -91,6 +93,14 @@ class Game {
     this.handleResetButton();
     Player.getPlayersInfo();
     player.getCarsAtEnd();
+    this.showLife();
+    this.showFuelBar();
+    
+    if(this.playerMoving){
+      player.positionY +=3;
+      player.update();
+
+    }
 
     if (allPlayers !== undefined) {
       image(track, 0, -height * 5, width, height * 6);
@@ -122,6 +132,7 @@ class Game {
           camera.position.x = cars[index - 1].position.x;
           camera.position.y = cars[index - 1].position.y;
 
+      
         }
       }
 
@@ -133,38 +144,45 @@ class Game {
       this.handlePlayerControls();
       const finishLine = height * 6 - 100;
 
-      if(player.positionY > finishLine){
-
+      if (player.positionY > finishLine) {
         gameState = 2;
-        player.rank +=1;
+        player.rank += 1;
         Player.updateCarsAtEnd(player.rank);
         player.update();
         this.showRank();
-         
       }
-      
-       
+
       drawSprites();
     }
   }
 
-  //Congratulations
-  //Rank
-  // 2
 
-  showRank(){
-      swal({
-          title:  `Congratulations'${"\n"} Rank ${"\n"} ${player.rank} `, 
-          text : "You have reached the finish Line",
-          imageurl: "https://clipartcraft.com/images/trophy-clipart-transparent-background-8.png",
-          imageSize : "100x100",
-          confirmButtonText: "Ok"
-          
-      });
-    
+  showLife(){
+    push();
+      image(lifeImage,width / 2 - 125, height - player.positionY - 400, 20, 20);
+      fill("white");
+      rect(width / 2 - 95,height - player.positionY - 400, 185, 20 );
+      fill("red");
+      rect(width / 2 - 95,height - player.positionY - 400, player.life, 20 );
+      noStroke();
+
+    pop();
+  }
+
+  showFuelBar(){
+    push();
+    image(fuelImage,width / 2 - 125, height - player.positionY - 100, 20, 20);
+    fill("white");
+    rect(width / 2 - 95,height - player.positionY - 100, 185, 20 );
+    fill("red");
+    rect(width / 2 - 95,height - player.positionY - 100, player.fuel, 20 );
+    noStroke();
+
+  pop();
     
   }
 
+  
   handleFuel(index) {
     // Adding fuel
     cars[index - 1].overlap(fuels, function(collector, collected) {
@@ -172,6 +190,28 @@ class Game {
       //collected is the sprite in the group collectibles that triggered
       //the event
       collected.remove();
+    });
+
+    if(player.fuel > 0 && this.playerMoving){
+       player.fuel -= 0.3;
+       
+    }
+    if(player.fuel <=0){
+      gameState = 2;
+      this.gameOver();
+    }
+
+
+  }
+
+  gameOver(){
+    swal({
+      title: `Game Over`,
+      text: "Oops! You Lost The Race",
+      imageUrl: "https://cdn.onlinewebfonts.com/svg/img_490022.png" ,
+      imageSize: "100x100",
+      confirmButtonText: "Thanks for playing",   
+
     });
   }
 
@@ -240,6 +280,7 @@ showLeaderboard() {
 
 handlePlayerControls() {
   if (keyIsDown(UP_ARROW)) {
+    this.playerMoving = "true";
     player.positionY += 10;
     player.update();
   }
@@ -253,7 +294,16 @@ handlePlayerControls() {
     player.positionX += 5;
     player.update();
   }
+  
 }
-
+showRank() {
+  swal({
+    title: `Awesome!${"\n"}Rank${"\n"}${player.rank}`,
+    text: "You reached the finish line successfully",
+    imageUrl:
+      "https://cdn0.iconfinder.com/data/icons/activity-2/32/123-1024.png",
+    imageSize: "100x100",
+    confirmButtonText: "Ok"
+  });
 }
-
+}
